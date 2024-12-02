@@ -25,19 +25,24 @@ from printImage import display_image as display_image_styled
 if os.path.exists(libdir):
     sys.path.append(libdir)
 
+photos_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'pic')
 
-# Setup paths (adjusted to be before importing epd2in66g)
-picdir = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'pic')
-image_path = os.path.join(picdir, "picture.jpg")
+
 
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
 
-def capture_image(camera, save_path):
+def capture_image(camera):
     """Capture an image using Picamera2."""
     try:
         logging.info("Initializing the Picamera2")
+
+        timestamp = time.strftime("%Y%m%d-%H%M%S")
+        filename = f"photo_{timestamp}.jpg"
+        save_path = os.path.join(photos_dir, filename)
+
+
         picam2 = camera
         picam2.start()
         time.sleep(2)  # Allow the camera to adjust
@@ -45,9 +50,11 @@ def capture_image(camera, save_path):
         picam2.capture_file(save_path)
         logging.info("Image captured successfully")
         picam2.stop()
+        return save_path
     except Exception as e:
         logging.error(f"Error capturing image: {e}")
         sys.exit(1)
+    
 
 
 def display_image(image_path):
@@ -73,6 +80,8 @@ def display_image(image_path):
         logging.error(f"Error displaying image: {e}")
         sys.exit(1)
 
+ 
+
 if __name__ == "__main__":
     try:
         # Initialize camera
@@ -80,10 +89,10 @@ if __name__ == "__main__":
         picam2.configure(picam2.create_still_configuration())
 
         # Capture the image
-        capture_image(picam2, image_path)
+        image_path = capture_image(picam2)
 
         # Display the image
-        display_image_styled(image_path)
+        display_image(image_path)
 
     except KeyboardInterrupt:
         logging.info("Process interrupted by user")
