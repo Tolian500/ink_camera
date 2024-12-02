@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 # -*- coding:utf-8 -*-
 from picamera2 import Picamera2
-
+import RPi.GPIO as GPIO
 
 import sys
 import os
@@ -24,6 +24,13 @@ from printImage import display_image as display_image_styled
 
 if os.path.exists(libdir):
     sys.path.append(libdir)
+
+
+BUTTON_PIN = 26  # Change to your GPIO pin
+
+GPIO.setmode(GPIO.BCM)
+GPIO.setup(BUTTON_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+
 
 photos_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'pic')
 
@@ -83,16 +90,19 @@ def display_image(image_path):
  
 
 if __name__ == "__main__":
+
     try:
-        # Initialize camera
-        picam2 = Picamera2()
-        picam2.configure(picam2.create_still_configuration())
+        while True:
+            if GPIO.input(BUTTON_PIN) == GPIO.LOW:
+                # Initialize camera
+                picam2 = Picamera2()
+                picam2.configure(picam2.create_still_configuration())
 
-        # Capture the image
-        image_path = capture_image(picam2)
+                # Capture the image
+                image_path = capture_image(picam2)
 
-        # Display the image
-        display_image(image_path)
+                # Display the image
+                display_image(image_path)
 
     except KeyboardInterrupt:
         logging.info("Process interrupted by user")
