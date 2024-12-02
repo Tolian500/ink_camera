@@ -19,6 +19,7 @@ from waveshare_epd import epd2in66g
 from PIL import Image
 import traceback
 import time
+from printImage import display_image as display_image_styled
 
 
 if os.path.exists(libdir):
@@ -28,6 +29,8 @@ if os.path.exists(libdir):
 # Setup paths (adjusted to be before importing epd2in66g)
 picdir = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'pic')
 image_path = os.path.join(picdir, "picture.jpg")
+
+
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
 
@@ -45,6 +48,7 @@ def capture_image(camera, save_path):
     except Exception as e:
         logging.error(f"Error capturing image: {e}")
         sys.exit(1)
+
 
 def display_image(image_path):
     """Displays an image on the e-paper display."""
@@ -79,7 +83,7 @@ if __name__ == "__main__":
         capture_image(picam2, image_path)
 
         # Display the image
-        display_image(image_path)
+        display_image_styled(image_path)
 
     except KeyboardInterrupt:
         logging.info("Process interrupted by user")
