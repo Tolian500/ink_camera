@@ -43,23 +43,17 @@ logging.basicConfig(level=logging.DEBUG)
 def capture_image(camera):
     """Capture an image using Picamera2."""
     try:
-        logging.info("Initializing the Picamera2")
-
         timestamp = time.strftime("%Y%m%d-%H%M%S")
         filename = f"photo_{timestamp}.jpg"
         save_path = os.path.join(photos_dir, filename)
 
-
-        picam2 = camera
-        picam2.start()
-        time.sleep(2)  # Allow the camera to adjust
         logging.info(f"Capturing image to {save_path}")
-        picam2.capture_file(save_path)
+        camera.capture_file(save_path)
         logging.info("Image captured successfully")
         return save_path
     except Exception as e:
         logging.error(f"Error capturing image: {e}")
-        raise  # Re-raise the exception to be handled in the main loop
+        raise
     
 
 
@@ -77,7 +71,7 @@ def display_image(image_path):
         logging.info(f"Loading image: {image_path}")
         image = Image.open(image_path)
         image = image.resize((epd.height, epd.width))  # Resize to fit display
-        image = image.rotate(270, expand=True)  # Rotate for landscape mode
+        image = image.rotate(90, expand=True)  # Rotate for landscape mode
 
         logging.info("Displaying the image on the e-paper")
         epd.display(epd.getbuffer(image))
@@ -91,31 +85,30 @@ def display_image(image_path):
 if __name__ == "__main__":
 
     try:
-        picam2 = None  # Initialize camera variable outside the loop
+        # Initialize camera once before the loop
+        picam2 = Picamera2()
+        picam2.configure(picam2.create_still_configuration())
+        picam2.start()
+        logging.info("Camera initialized and warmed up")
+
         while True:
             if GPIO.input(BUTTON_PIN) == GPIO.LOW:
                 try:
-                    # Initialize camera only if it's not already initialized
-                    if picam2 is None:
-                        picam2 = Picamera2()
-                        picam2.configure(picam2.create_still_configuration())
-
-                    # Capture the image
+                    # Capture and display image immediately
                     image_path = capture_image(picam2)
-
-                    # Display the image
                     display_image(image_path)
 
                 except Exception as e:
                     logging.error(f"Error in main loop: {e}")
-                finally:
-                    # Always clean up the camera
-                    if picam2 is not None:
-                        picam2.close()
-                        picam2 = None
-                    time.sleep(1)  # Add a delay to debounce the button
+                    # Only close and reinitialize camera if there's an error
+                    picam2.close()
+                    picam2 = Picamera2()
+                    picam2.configure(picam2.create_still_configuration())
+                    picam2.start()
+                
+                time.sleep(1)  # Debounce delay
 
-            time.sleep(0.1)  # Add a small delay to reduce CPU usage
+            time.sleep(0.1)  # Small delay to reduce CPU usage
 
     except KeyboardInterrupt:
         logging.info("Process interrupted by user")
