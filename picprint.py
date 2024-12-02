@@ -56,11 +56,10 @@ def capture_image(camera):
         logging.info(f"Capturing image to {save_path}")
         picam2.capture_file(save_path)
         logging.info("Image captured successfully")
-        picam2.stop()
         return save_path
     except Exception as e:
         logging.error(f"Error capturing image: {e}")
-        sys.exit(1)
+        raise  # Re-raise the exception to be handled in the main loop
     
 
 
@@ -92,19 +91,35 @@ def display_image(image_path):
 if __name__ == "__main__":
 
     try:
+        picam2 = None  # Initialize camera variable outside the loop
         while True:
             if GPIO.input(BUTTON_PIN) == GPIO.LOW:
-                # Initialize camera
-                picam2 = Picamera2()
-                picam2.configure(picam2.create_still_configuration())
+                try:
+                    # Initialize camera only if it's not already initialized
+                    if picam2 is None:
+                        picam2 = Picamera2()
+                        picam2.configure(picam2.create_still_configuration())
 
-                # Capture the image
-                image_path = capture_image(picam2)
+                    # Capture the image
+                    image_path = capture_image(picam2)
 
-                # Display the image
-                display_image(image_path)
+                    # Display the image
+                    display_image(image_path)
+
+                except Exception as e:
+                    logging.error(f"Error in main loop: {e}")
+                finally:
+                    # Always clean up the camera
+                    if picam2 is not None:
+                        picam2.close()
+                        picam2 = None
+                    time.sleep(1)  # Add a delay to debounce the button
+
+            time.sleep(0.1)  # Add a small delay to reduce CPU usage
 
     except KeyboardInterrupt:
         logging.info("Process interrupted by user")
+        if picam2 is not None:
+            picam2.close()
         epd2in66g.epdconfig.module_exit(cleanup=True)
         sys.exit(0)
