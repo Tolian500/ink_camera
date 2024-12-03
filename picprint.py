@@ -103,6 +103,10 @@ if __name__ == "__main__":
                     styled_image_name = f"styled_{timestamp}.png"
                     styled_image_path = os.path.join(photos_dir, styled_image_name)
                     styled_image.save(styled_image_path)
+
+                
+
+
                     display_image(styled_image_path)
 
                 except Exception as e:

@@ -61,7 +61,8 @@ def print_styled(custom_image_path):
     # Load the image
     img = Image.open(custom_image_path)
     # Step 2: Resize without stretching
-    img_resized = resize_image_with_crop(img, 800, 480)
+    # img_resized = resize_image_with_crop(img, 800, 480)
+    img_resized = img # temporary without resizing
     
     # Step 3: Convert to grayscale
     img_grayscale = convert_to_grayscale(img_resized)
