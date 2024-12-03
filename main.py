@@ -66,7 +66,7 @@ def print_styled(custom_image_path):
     
     # Step 3: Convert to grayscale
     img_grayscale = convert_to_grayscale(img_resized)
-    img_grayscale.save(output_grayscale)
+    # img_grayscale.save(output_grayscale)
     
     # Step 4: Reduce to 4 shades
     img_4_shades = reduce_to_4_shades(img_grayscale)
