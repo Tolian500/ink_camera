@@ -20,6 +20,7 @@ from PIL import Image
 import traceback
 import time
 from printImage import display_image as display_image_styled
+from main import print_styled
 
 
 if os.path.exists(libdir):
@@ -90,13 +91,19 @@ if __name__ == "__main__":
         picam2.configure(picam2.create_still_configuration())
         picam2.start()
         logging.info("Camera initialized and warmed up")
+        print("Camera initialized and warmed up")
 
         while True:
             if GPIO.input(BUTTON_PIN) == GPIO.LOW:
                 try:
                     # Capture and display image immediately
                     image_path = capture_image(picam2)
-                    display_image(image_path)
+                    styled_image = print_styled(image_path)
+                    timestamp = time.strftime("%Y%m%d-%H%M%S")
+                    styled_image_name = f"styled_{timestamp}.png"
+                    styled_image_path = os.path.join(photos_dir, styled_image_name)
+                    styled_image.save(styled_image_path)
+                    display_image(styled_image_path)
 
                 except Exception as e:
                     logging.error(f"Error in main loop: {e}")

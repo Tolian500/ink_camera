@@ -1,7 +1,7 @@
 from PIL import Image, ImageOps
 
 # Step 1: Read the image
-input_image = "example.jpg"
+input_image_path = "example.jpg"
 output_grayscale = "grayshade.png"
 output_colored = "colored.png"
 
@@ -55,11 +55,11 @@ def apply_custom_palette(image):
     colored_image.paste(image)
     return colored_image.convert("RGB")
 
-# Main process
-if __name__ == "__main__":
+
+def print_styled(custom_image_path):
+
     # Load the image
-    img = Image.open(input_image)
-    
+    img = Image.open(custom_image_path)
     # Step 2: Resize without stretching
     img_resized = resize_image_with_crop(img, 800, 480)
     
@@ -72,7 +72,15 @@ if __name__ == "__main__":
     
     # Step 5: Apply custom colors
     img_colored = apply_custom_palette(img_4_shades)
-    img_colored.save(output_colored)
+    return img_colored
+
+
+
+    
+# Main process
+if __name__ == "__main__":
+
+    print_styled(input_image_path)
 
     print("Processing complete. Images saved:")
     print(f"Grayscale image: {output_grayscale}")
