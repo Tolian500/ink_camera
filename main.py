@@ -45,7 +45,7 @@ def apply_custom_palette(image):
     palette = [
         255, 255, 255,  # White
         255, 0, 0,      # Red
-        255, 255, 0,    # Yellow
+        219, 145, 0,    # Orange (#DB9100)
         0, 0, 0         # Black
     ]
     
