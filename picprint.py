@@ -59,7 +59,7 @@ def capture_image(camera):
 
 
 def display_image(image_path):
-    """Displays an image on the e-paper display."""
+    """Displays an image on the e-paper display while maintaining aspect ratio."""
     try:
         logging.info("Initializing the e-paper display")
         epd = epd2in66g.EPD()
@@ -71,11 +71,39 @@ def display_image(image_path):
 
         logging.info(f"Loading image: {image_path}")
         image = Image.open(image_path)
-        image = image.resize((epd.height, epd.width))  # Resize to fit display
-        image = image.rotate(90, expand=True)  # Rotate for landscape mode
+        
+        # Calculate the aspect ratio and new dimensions
+        display_width = epd.height  # Since we rotate later, we use height
+        display_height = epd.width
+        
+        # Calculate scaling factors for both dimensions
+        width_ratio = display_width / image.width
+        height_ratio = display_height / image.height
+        
+        # Use the smaller ratio to maintain aspect ratio
+        scale_factor = min(width_ratio, height_ratio)
+        
+        new_width = int(image.width * scale_factor)
+        new_height = int(image.height * scale_factor)
+        
+        # Resize image maintaining aspect ratio
+        image = image.resize((new_width, new_height), Image.Resampling.LANCZOS)
+        
+        # Create a white background image
+        background = Image.new('RGB', (display_width, display_height), 'white')
+        
+        # Calculate position to center the image
+        x = (display_width - new_width) // 2
+        y = (display_height - new_height) // 2
+        
+        # Paste the resized image onto the center of the white background
+        background.paste(image, (x, y))
+        
+        # Rotate for landscape mode
+        background = background.rotate(90, expand=True)
 
         logging.info("Displaying the image on the e-paper")
-        epd.display(epd.getbuffer(image))
+        epd.display(epd.getbuffer(background))
         time.sleep(3)
     except Exception as e:
         logging.error(f"Error displaying image: {e}")
