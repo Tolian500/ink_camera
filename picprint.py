@@ -59,7 +59,7 @@ def capture_image(camera):
 
 
 def display_image(image_path):
-    """Displays an image on the e-paper display while maintaining aspect ratio."""
+    """Displays an image on the e-paper display, filling the screen width."""
     try:
         logging.info("Initializing the e-paper display")
         epd = epd2in66g.EPD()
@@ -80,30 +80,28 @@ def display_image(image_path):
         width_ratio = display_width / image.width
         height_ratio = display_height / image.height
         
-        # Use the smaller ratio to maintain aspect ratio
-        scale_factor = min(width_ratio, height_ratio)
+        # Use the larger ratio to fill the screen width
+        scale_factor = max(width_ratio, height_ratio)
         
         new_width = int(image.width * scale_factor)
         new_height = int(image.height * scale_factor)
         
-        # Resize image maintaining aspect ratio
+        # Resize image to fill screen
         image = image.resize((new_width, new_height), Image.Resampling.LANCZOS)
         
-        # Create a white background image
-        background = Image.new('RGB', (display_width, display_height), 'white')
+        # Center crop the image to fit display dimensions
+        left = (new_width - display_width) // 2
+        top = (new_height - display_height) // 2
+        right = left + display_width
+        bottom = top + display_height
         
-        # Calculate position to center the image
-        x = (display_width - new_width) // 2
-        y = (display_height - new_height) // 2
+        image = image.crop((left, top, right, bottom))
         
-        # Paste the resized image onto the center of the white background
-        background.paste(image, (x, y))
-        
-        # Rotate for landscape mode
-        background = background.rotate(90, expand=True)
+        # Rotate for landscape mode (270 degrees instead of 90)
+        image = image.rotate(270, expand=True)
 
         logging.info("Displaying the image on the e-paper")
-        epd.display(epd.getbuffer(background))
+        epd.display(epd.getbuffer(image))
         time.sleep(3)
     except Exception as e:
         logging.error(f"Error displaying image: {e}")
